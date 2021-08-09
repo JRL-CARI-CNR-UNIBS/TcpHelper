@@ -4,7 +4,7 @@ from signal import signal, SIGINT
 from sys import exit
 from threading import Thread
 from collections import deque
-
+import sys
 stop=False
 
 
@@ -13,12 +13,12 @@ def handler(signal_received, frame):
     stop=True
 
 class ReadStringThread (Thread):
-    def __init__(self, name):
+    def __init__(self, name,hostname,port):
         Thread.__init__(self)
         self.name = name
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.connect((socket.gethostname(), 1239))
-        print("host name "+socket.gethostname())
+        self.s.connect((hostname, port))
+        print("host name "+socket.gethostname(),". port ",port)
         self.s.settimeout(0.1)
         self.new_string=False;
         self.string=""
@@ -52,18 +52,28 @@ class ReadStringThread (Thread):
                 self.new_string=True;
                 self.string=full_msg
                 self.queue.append(full_msg)
-                print(full_msg+"\n")
                 full_msg=""
 
             if stop:
                 break;
 
         self.s.close()
-        print ("Thread '" + self.name + "' terminato")
 
 if __name__ == '__main__':
     signal(SIGINT, handler)
-    thread1 = ReadStringThread("Thread#1")
+    if len(sys.argv) < 3:
+        print("error: wrong.number of input\nCorrect usage:\npython3 python_tcp_client_thread.py [HOSTNAME] [PORT]")
+        sys.exit()
+    nome_script, hostname, port = sys.argv
+
+    try:
+        port=int(port)
+    except:
+        print("port has to be a integer")
+        sys.exit()
+    # hostname=socket.gethostname()
+    # port=1239
+    thread1 = ReadStringThread("Thread#1",hostname,port)
     thread1.start()
     while True:
         if stop:
