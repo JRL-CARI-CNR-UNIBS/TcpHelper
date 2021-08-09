@@ -5,46 +5,15 @@ from threading import Thread
 from collections import deque
 import sys
 import time
+from python_tcp_helper import TcpServerThread
 stop=False
+
 def handler(signal_received, frame):
     global stop
     stop=True
 
 
-class TcpServerThread (Thread):
-    def __init__(self, name,hostname,port):
-        Thread.__init__(self)
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.bind((hostname, port))
-        self.s.listen(5)
-        self.queue = deque()
-    def hasEmptyQueue(self):
-        return len(self.queue)==0
-    def sendString(self,string):
-        self.queue.append(string)
-    def run(self):
-        global stop
-        while True:
-            if stop:
-                break;
-            # now our endpoint knows about the OTHER endpoint.
-            clientsocket, address = self.s.accept()
-            print(f"Connection from {address} has been established.")
-            while True:
-                if stop:
-                    break
-                try:
-                    print("in queue = ",len(self.queue))
-                    if len(self.queue)>0:
-                        string=self.queue.popleft()
-                        clientsocket.send(bytes(string+"\n","utf-8"))
-                        print("sent")
-                except:
-                    print("connection lost, waiting for a new one")
-            clientsocket.close()
 
-
-        self.s.close()
 
 if __name__ == '__main__':
     signal(SIGINT, handler)
@@ -64,6 +33,7 @@ if __name__ == '__main__':
     thread1.start()
     while True:
         if stop:
+            thread1.stopThread()
             break
         thread1.sendString("pippo")
         time.sleep(1)
