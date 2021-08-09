@@ -18,21 +18,14 @@ std::string make_string(boost::asio::streambuf& streambuf)
 
 class TcpClient
 {
-public:
+protected:
   boost::asio::io_context io_context;
   tcp::socket s;
   tcp::resolver resolver;
   bool& stop_;
-  bool new_string=false;
   std::queue<std::string> queue_;
   std::mutex mtx;
-  TcpClient(std::string hostname, std::string port, bool& stop_flag):
-    s(io_context),
-    resolver(io_context),
-    stop_(stop_flag)
-  {
-    boost::asio::connect(s, resolver.resolve(hostname, port));
-  };
+
 
   std::string read()
   {
@@ -49,13 +42,20 @@ public:
     if (str.size()>0)
     {
       mtx.lock();
-      new_string=true;
       queue_.push(str);
       mtx.unlock();
-      std::cout << str << std::endl;
     }
     return str;
   }
+
+public:
+  TcpClient(std::string hostname, std::string port, bool& stop_flag):
+    s(io_context),
+    resolver(io_context),
+    stop_(stop_flag)
+  {
+    boost::asio::connect(s, resolver.resolve(hostname, port));
+  };
 
   bool isUnreadStringAvailable()
   {
@@ -64,8 +64,13 @@ public:
 
   std::string getString()
   {
-    std::string str=queue_.front();
-    queue_.pop();
+    std::string str="";
+    mtx.lock();
+    if (queue_.size()>0)
+    {
+      str=queue_.front();
+      queue_.pop();
+    }
     return str;
   }
 
@@ -74,7 +79,7 @@ public:
     while (not stop_)
     {
       read();
-      usleep(10000);
+      usleep(1000);
     }
   }
 };
@@ -82,13 +87,14 @@ public:
 
 class TcpServer
 {
-public:
+protected:
   boost::asio::io_service io_service;
   tcp::acceptor a;
   socket_ptr sock;
   bool& stop_;
   std::queue<std::string> queue;
   std::mutex mtx;
+public:
   TcpServer(int port, bool& stop_flag):
     a(io_service, tcp::endpoint(tcp::v4(), port)),
     stop_(stop_flag)
@@ -97,7 +103,7 @@ public:
     a.accept(*sock);
   }
 
-  void sendString(const std::string str)
+  void sendString(const std::string& str)
   {
     mtx.lock();
     queue.push(str);
@@ -133,8 +139,7 @@ public:
       else
         mtx.unlock();
 
-      usleep(1000000);
-
+      usleep(1e4);
     }
   }
 };
