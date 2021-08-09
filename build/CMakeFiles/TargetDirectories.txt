@@ -1,0 +1,4 @@
+/home/jacobi/projects/test_socket/build/CMakeFiles/rebuild_cache.dir
+/home/jacobi/projects/test_socket/build/CMakeFiles/edit_cache.dir
+/home/jacobi/projects/test_socket/build/CMakeFiles/tcp_server.dir
+/home/jacobi/projects/test_socket/build/CMakeFiles/tcp_client.dir

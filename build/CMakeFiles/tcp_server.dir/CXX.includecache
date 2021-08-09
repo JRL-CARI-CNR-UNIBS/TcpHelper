@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jacobi/projects/test_socket/cpp_tcp_server.cpp
+cstdlib
+-
+iostream
+-
+boost/bind.hpp
+-
+boost/smart_ptr.hpp
+-
+boost/asio.hpp
+-
+boost/thread/thread.hpp
+-
+tcp_classes.h
+/home/jacobi/projects/test_socket/tcp_classes.h
+queue
+-
+mutex
+-
+
+/home/jacobi/projects/test_socket/tcp_classes.h
+cstdlib
+-
+cstring
+-
+iostream
+-
+boost/asio.hpp
+-
+queue
+-
+mutex
+-
+
