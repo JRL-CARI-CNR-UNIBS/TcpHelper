@@ -3,8 +3,11 @@ import socket
 from signal import signal, SIGINT
 from sys import exit
 from threading import Thread
+from collections import deque
 
 stop=False
+
+
 def handler(signal_received, frame):
     global stop
     stop=True
@@ -19,11 +22,16 @@ class ReadStringThread (Thread):
         self.s.settimeout(0.1)
         self.new_string=False;
         self.string=""
+        self.queue = deque()
     def isNewStringAvailable(self):
-        return self.new_string
+        return len(self.queue)>0
     def getString(self):
         self.new_string=False;
-        return self.string
+        #return self.string
+        if len(self.queue)>0:
+            return self.queue.popleft()
+        else:
+            return ""
     def run(self):
         global stop
         print ("Thread '" + self.name + "' avviato")
@@ -43,6 +51,7 @@ class ReadStringThread (Thread):
             if len(full_msg) > 0:
                 self.new_string=True;
                 self.string=full_msg
+                self.queue.append(full_msg)
                 print(full_msg+"\n")
                 full_msg=""
 

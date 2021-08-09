@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
   while (not stop)
   {
-    std::string str="pippo_"+std::to_string(idx++)+"\n";
+    std::string str="test_"+std::to_string(idx++)+"\n";
     server.sendString(str);
     sleep(2);
   }
