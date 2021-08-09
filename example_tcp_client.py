@@ -4,7 +4,7 @@ from sys import exit
 from threading import Thread
 from collections import deque
 import sys
-from python_tcp_helper import TclClientThread
+from python_tcp_helper import TcpClientThread
 
 
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         sys.exit()
     # hostname=socket.gethostname()
     # port=1239
-    thread1 = TclClientThread("Thread#1",hostname,port)
+    thread1 = TcpClientThread("Thread#1",hostname,port)
     thread1.start()
     while True:
         if stop:

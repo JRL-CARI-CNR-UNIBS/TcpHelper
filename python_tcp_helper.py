@@ -2,11 +2,12 @@ import socket
 from signal import signal, SIGINT
 from sys import exit
 from threading import Thread
+from threading import Lock
 from collections import deque
 import sys
 
 global stop
-class TclClientThread (Thread):
+class TcpClientThread (Thread):
     def __init__(self, name,hostname,port):
         Thread.__init__(self)
         self.name = name
@@ -14,23 +15,26 @@ class TclClientThread (Thread):
         self.s.connect((hostname, port))
         print("host name "+socket.gethostname(),". port ",port)
         self.s.settimeout(0.1)
-        self.new_string=False;
-        self.string=""
         self.queue = deque()
         self.stop=False
+        self.lock = Lock()
     def isNewStringAvailable(self):
-        return len(self.queue)>0
+        self.lock.acquire()
+        flag=len(self.queue)>0
+        self.lock.release()
+        return flag
 
     def stopThread(self):
         self.stop=True
 
     def getString(self):
         self.new_string=False;
-        #return self.string
+        str=""
+        self.lock.acquire()
         if len(self.queue)>0:
-            return self.queue.popleft()
-        else:
-            return ""
+            str=self.queue.popleft()
+        self.lock.release()
+        return str
     def run(self):
         while True:
             full_msg = ''
@@ -64,8 +68,12 @@ class TcpServerThread (Thread):
         self.s.listen(5)
         self.queue = deque()
         self.stop=False
+        self.lock = Lock()
     def hasEmptyQueue(self):
-        return len(self.queue)==0
+        self.lock.acquire()
+        flag=len(self.queue)==0
+        self.lock.release()
+        return flag
 
     def stopThread(self):
         self.stop=True
@@ -85,11 +93,14 @@ class TcpServerThread (Thread):
                 if self.stop:
                     break
                 try:
+                    self.lock.acquire()
                     if len(self.queue)>0:
                         string=self.queue.popleft()
                         clientsocket.send(bytes(string+"\n","utf-8"))
+                    self.lock.release()
                 except:
                     print("connection lost, waiting for a new one")
+                    self.lock.release()
             clientsocket.close()
 
 
