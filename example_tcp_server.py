@@ -4,12 +4,9 @@ from sys import exit
 from threading import Thread
 from collections import deque
 import sys
-from python_tcp_helper import ReadStringThread
-
-
-
+import time
+from python_tcp_helper import TcpServerThread
 stop=False
-
 
 def handler(signal_received, frame):
     global stop
@@ -17,10 +14,11 @@ def handler(signal_received, frame):
 
 
 
+
 if __name__ == '__main__':
     signal(SIGINT, handler)
     if len(sys.argv) < 3:
-        print("error: wrong.number of input\nCorrect usage:\npython3 python_tcp_client_thread.py [HOSTNAME] [PORT]")
+        print("error: wrong.number of input\nCorrect usage:\npython3 example_tcp_server.py [HOSTNAME] [PORT]")
         sys.exit()
     nome_script, hostname, port = sys.argv
 
@@ -31,12 +29,12 @@ if __name__ == '__main__':
         sys.exit()
     # hostname=socket.gethostname()
     # port=1239
-    thread1 = ReadStringThread("Thread#1",hostname,port)
+    thread1 = TcpServerThread("Thread#1",hostname,port)
     thread1.start()
     while True:
         if stop:
             thread1.stopThread()
             break
-        if (thread1.isNewStringAvailable()):
-            print("new string: "+thread1.getString())
+        thread1.sendString("pippo")
+        time.sleep(1)
     thread1.join()

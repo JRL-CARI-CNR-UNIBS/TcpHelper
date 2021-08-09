@@ -6,7 +6,7 @@ from collections import deque
 import sys
 
 global stop
-class ReadStringThread (Thread):
+class TclClientThread (Thread):
     def __init__(self, name,hostname,port):
         Thread.__init__(self)
         self.name = name
