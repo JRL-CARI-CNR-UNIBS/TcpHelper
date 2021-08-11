@@ -18,6 +18,10 @@ class TcpClientThread (Thread):
         self.queue = deque()
         self.stop=False
         self.lock = Lock()
+    
+    def __del__(self):
+    	self.s.close()
+    	
     def isNewStringAvailable(self):
         self.lock.acquire()
         flag=len(self.queue)>0
@@ -69,6 +73,10 @@ class TcpServerThread (Thread):
         self.queue = deque()
         self.stop=False
         self.lock = Lock()
+        
+    def __del__(self):
+    	self.s.close()
+    	
     def hasEmptyQueue(self):
         self.lock.acquire()
         flag=len(self.queue)==0
