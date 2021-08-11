@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/tcp_client.dir/cpp_tcp_client.cpp.o  -o tcp_client  /usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0 /usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0 /usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0 /usr/lib/x86_64-linux-gnu/libboost_atomic.so.1.71.0 -lpthread 
