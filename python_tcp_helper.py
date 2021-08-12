@@ -4,6 +4,7 @@ from sys import exit
 from threading import Thread
 from threading import Lock
 from collections import deque
+import time
 import sys
 
 global stop
@@ -12,6 +13,7 @@ class TcpClientThread (Thread):
         Thread.__init__(self)
         self.name = name
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.settimeout(5)
         self.s.connect((hostname, port))
         print("host name "+socket.gethostname(),". port ",port)
         self.s.settimeout(0.1)
@@ -20,8 +22,9 @@ class TcpClientThread (Thread):
         self.lock = Lock()
     
     def __del__(self):
-    	self.s.close()
-    	
+        self.stop=True
+        self.s.close()
+        
     def isNewStringAvailable(self):
         self.lock.acquire()
         flag=len(self.queue)>0
@@ -30,6 +33,7 @@ class TcpClientThread (Thread):
 
     def stopThread(self):
         self.stop=True
+        print("stopping "+self.name)
 
     def getString(self):
         self.new_string=False;
@@ -39,10 +43,22 @@ class TcpClientThread (Thread):
             str=self.queue.popleft()
         self.lock.release()
         return str
+    
+    def getLastStringAndClear(self):
+        self.new_string=False;
+        str=""
+        self.lock.acquire()
+        if len(self.queue)>0:
+            str=self.queue.pop()
+            self.queue.clear()
+        self.lock.release()
+        return str
+    
     def run(self):
         while True:
             full_msg = ''
             while True:
+                time.sleep(0.01)
                 if self.stop:
                     break
                 try:
@@ -56,18 +72,19 @@ class TcpClientThread (Thread):
             if len(full_msg) > 0:
                 self.new_string=True;
                 self.string=full_msg
-                self.queue.append(full_msg)
+                self.queue.append(full_msg.strip('\n'))
                 full_msg=""
 
             if self.stop:
                 break;
-
+        print("exit ",self.name)
         self.s.close()
 
 class TcpServerThread (Thread):
     def __init__(self, name,hostname,port):
         Thread.__init__(self)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.settimeout(5)
         self.s.bind((hostname, port))
         self.s.listen(5)
         self.queue = deque()
@@ -75,8 +92,9 @@ class TcpServerThread (Thread):
         self.lock = Lock()
         
     def __del__(self):
-    	self.s.close()
-    	
+        self.s.close()
+        self.stop=True
+        
     def hasEmptyQueue(self):
         self.lock.acquire()
         flag=len(self.queue)==0
@@ -85,31 +103,40 @@ class TcpServerThread (Thread):
 
     def stopThread(self):
         self.stop=True
-
+        print("stopping "+self.name)
     def sendString(self,string):
         self.queue.append(string)
 
     def run(self):
-
         while True:
             if self.stop:
                 break;
             # now our endpoint knows about the OTHER endpoint.
-            clientsocket, address = self.s.accept()
-            print(f"Connection from {address} has been established.")
-            while True:
-                if self.stop:
-                    break
-                try:
+            try:
+                clientsocket, address = self.s.accept()
+                print(f"Connection from {address} has been established.")
+                while True:
+                    if self.stop:
+                        break
                     self.lock.acquire()
                     if len(self.queue)>0:
                         string=self.queue.popleft()
+                    else:
+                        self.lock.release()
+                        continue
+                    self.lock.release()
+                    
+                    try:
                         clientsocket.send(bytes(string+"\n","utf-8"))
-                    self.lock.release()
-                except:
-                    print("connection lost, waiting for a new one")
-                    self.lock.release()
-            clientsocket.close()
+                    except:
+                        print("connection lost, waiting for a new one")
+                        self.queue.append(string)
+                        self.lock.release()
+                        break
+                clientsocket.close()
+            except:
+                time.sleep(0.1)
 
 
         self.s.close()
+        print("exit ",self.name)
