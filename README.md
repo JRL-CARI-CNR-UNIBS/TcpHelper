@@ -121,6 +121,11 @@ std::string TcpClient::getString()
 ```
 
 
+- get the last received string and clear the queue. Return "" if there are no strings.
+```
+std::string TcpClient::getLastStringAndClearQueue()
+```
+
 ### TcpServer
 Server for sending strings. It runs in a separated thread, new strings are queued in FIFO order.
 Usage:
