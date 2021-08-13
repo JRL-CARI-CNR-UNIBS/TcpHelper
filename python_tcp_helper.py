@@ -20,11 +20,11 @@ class TcpClientThread (Thread):
         self.queue = deque()
         self.stop=False
         self.lock = Lock()
-    
+
     def __del__(self):
         self.stop=True
         self.s.close()
-        
+
     def isNewStringAvailable(self):
         self.lock.acquire()
         flag=len(self.queue)>0
@@ -43,8 +43,8 @@ class TcpClientThread (Thread):
             str=self.queue.popleft()
         self.lock.release()
         return str
-    
-    def getLastStringAndClear(self):
+
+    def getLastStringAndClearQueue(self):
         self.new_string=False;
         str=""
         self.lock.acquire()
@@ -53,7 +53,7 @@ class TcpClientThread (Thread):
             self.queue.clear()
         self.lock.release()
         return str
-    
+
     def run(self):
         while True:
             full_msg = ''
@@ -90,11 +90,11 @@ class TcpServerThread (Thread):
         self.queue = deque()
         self.stop=False
         self.lock = Lock()
-        
+
     def __del__(self):
         self.s.close()
         self.stop=True
-        
+
     def hasEmptyQueue(self):
         self.lock.acquire()
         flag=len(self.queue)==0
@@ -125,7 +125,7 @@ class TcpServerThread (Thread):
                         self.lock.release()
                         continue
                     self.lock.release()
-                    
+
                     try:
                         clientsocket.send(bytes(string+"\n","utf-8"))
                     except:
