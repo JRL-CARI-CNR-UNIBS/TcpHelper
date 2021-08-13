@@ -1,3 +1,4 @@
+#pragma once
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -10,7 +11,7 @@ namespace tcp_helper
 {
 
 typedef std::shared_ptr<tcp::socket> socket_ptr;
-std::string make_string(boost::asio::streambuf& streambuf)
+inline std::string make_string(boost::asio::streambuf& streambuf)
 {
  return {buffers_begin(streambuf.data()),
          buffers_end(streambuf.data())};
@@ -100,7 +101,6 @@ public:
     stop_(stop_flag)
   {
     sock=std::make_shared<tcp::socket>(io_service);
-    a.accept(*sock);
   }
 
   void sendString(const std::string& str)
@@ -117,6 +117,7 @@ public:
 
   void thread()
   {
+    a.accept(*sock);
     while (not stop_)
     {
       mtx.lock();
