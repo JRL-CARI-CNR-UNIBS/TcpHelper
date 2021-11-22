@@ -23,6 +23,7 @@ class TcpClientThread (Thread):
 
     def __del__(self):
         self.stop=True
+        print(self.name+": stop")
         self.s.close()
 
     def isNewStringAvailable(self):
@@ -90,10 +91,12 @@ class TcpServerThread (Thread):
         self.queue = deque()
         self.stop=False
         self.lock = Lock()
+        self.name = name
 
     def __del__(self):
-        self.s.close()
+        print(self.name+": stop")
         self.stop=True
+        self.s.close()
 
     def hasEmptyQueue(self):
         self.lock.acquire()
@@ -114,13 +117,14 @@ class TcpServerThread (Thread):
             # now our endpoint knows about the OTHER endpoint.
             try:
                 clientsocket, address = self.s.accept()
-                print(f"Connection from {address} has been established.")
+                print(self.name +f": Connection from {address} has been established.")
                 while True:
                     if self.stop:
                         break
                     self.lock.acquire()
                     if len(self.queue)>0:
                         string=self.queue.popleft()
+                        print(self.name+": sendind "+string)
                     else:
                         self.lock.release()
                         continue
@@ -129,7 +133,7 @@ class TcpServerThread (Thread):
                     try:
                         clientsocket.send(bytes(string+"\n","utf-8"))
                     except:
-                        print("connection lost, waiting for a new one")
+                        print(self.name +": connection lost, waiting for a new one")
                         self.queue.append(string)
                         self.lock.release()
                         break
