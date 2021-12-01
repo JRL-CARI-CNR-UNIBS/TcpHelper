@@ -8,13 +8,12 @@ import time
 import sys
 
 global stop
-class TcpClientThread (Thread):
+class UdpReceiverThread (Thread):
     def __init__(self, name,hostname,port):
         Thread.__init__(self)
         self.name = name
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(5)
-        self.s.connect((hostname, port))
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.s.bind((hostname, port))
         print("host name "+socket.gethostname(),". port ",port)
         self.s.settimeout(0.1)
         self.queue = deque()
@@ -56,18 +55,18 @@ class TcpClientThread (Thread):
         return str
 
     def run(self):
+        print("init")
+
         while True:
+
             full_msg = ''
             while True:
                 time.sleep(0.01)
                 if self.stop:
                     break
                 try:
-                    msg = self.s.recv(8)
-                    if len(msg) <= 0:
-                        break
+                    msg, addr = self.s.recvfrom(1024) # buffer size is 1024 bytes
                     full_msg += msg.decode("utf-8")
-                    #print("running: "+full_msg+"\n")
                 except:
                     break
             if len(full_msg) > 0:
@@ -81,13 +80,12 @@ class TcpClientThread (Thread):
         print("exit ",self.name)
         self.s.close()
 
-class TcpServerThread (Thread):
+class UdpSenderThread (Thread):
     def __init__(self, name,hostname,port):
         Thread.__init__(self)
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(5)
-        self.s.bind((hostname, port))
-        self.s.listen(5)
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.port=port
+        self.hostname=hostname
         self.queue = deque()
         self.stop=False
         self.lock = Lock()
@@ -116,8 +114,6 @@ class TcpServerThread (Thread):
                 break;
             # now our endpoint knows about the OTHER endpoint.
             try:
-                clientsocket, address = self.s.accept()
-                print(self.name +f": Connection from {address} has been established.")
                 while True:
                     if self.stop:
                         break
@@ -131,14 +127,13 @@ class TcpServerThread (Thread):
                     self.lock.release()
 
                     try:
-                        clientsocket.send(bytes(string+"\n","utf-8"))
+                        self.s.sendto(bytes(string+"\n","utf-8"),(self.hostname,self.port))
                     except:
                         print(self.name +": connection lost, waiting for a new one")
                         self.lock.acquire()
                         self.queue.append(string)
                         self.lock.release()
                         break
-                clientsocket.close()
             except:
                 time.sleep(0.1)
 
