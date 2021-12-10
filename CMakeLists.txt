@@ -20,3 +20,15 @@ add_executable(tcp_server cpp_tcp_server.cpp)
 target_link_libraries( tcp_server
  ${Boost_LIBRARIES}
 )
+
+
+add_executable(cpp_udp_sender cpp_udp_sender.cpp)
+target_link_libraries( cpp_udp_sender
+ ${Boost_LIBRARIES}
+)
+
+
+add_executable(cpp_udp_receiver cpp_udp_receiver.cpp)
+target_link_libraries( cpp_udp_receiver
+ ${Boost_LIBRARIES}
+)
