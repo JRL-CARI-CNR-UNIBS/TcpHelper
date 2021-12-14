@@ -283,9 +283,19 @@ public:
     if (queue_.size()>0)
     {
       str=queue_.front();
+    }
+    mtx.unlock();
+    return str;
+  }
+
+  void clearQueue()
+  {
+    mtx.lock();
+    while (queue_.size()>0)
+    {
       queue_.pop();
     }
-    return str;
+    mtx.unlock();
   }
 
   void thread()
