@@ -107,9 +107,7 @@ class UdpSenderThread (Thread):
         print("stopping "+self.name)
     def sendString(self,string):
         self.lock.acquire()
-        print("appen "+string)
         self.queue.append(string)
-        print("length "+str(len(self.queue)))
         self.lock.release()
 
     def run(self):
@@ -125,12 +123,10 @@ class UdpSenderThread (Thread):
                     #print("length "+str(len(self.queue)))
                     if len(self.queue)>0:
                         string=self.queue.popleft()
-                        print(self.name+": sendind "+string)
                     else:
                         self.lock.release()
                         continue
                     self.lock.release()
-                    print(string)
                     try:
                         self.s.sendto(bytes(string+"\n","utf-8"),(self.hostname,self.port))
                     except:
