@@ -23,7 +23,7 @@ class TcpClientThread (Thread):
 
     def __del__(self):
         self.stop=True
-        print(self.name+": stop")
+        print(self.name+": stop!!!")
         self.s.close()
 
     def isNewStringAvailable(self):
@@ -94,7 +94,7 @@ class TcpServerThread (Thread):
         self.name = name
 
     def __del__(self):
-        print(self.name+": stop")
+        print(self.name+": stop!!")
         self.stop=True
         self.s.close()
 
