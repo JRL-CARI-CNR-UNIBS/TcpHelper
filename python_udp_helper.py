@@ -15,15 +15,20 @@ class UdpReceiverThread (Thread):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.s.bind((hostname, port))
         print("host name "+socket.gethostname(),". port ",port)
-        self.s.settimeout(0.1)
+        self.s.settimeout(1)
         self.queue = deque()
         self.stop=False
         self.lock = Lock()
+        self.buf_len=1024
+        #self.s.setblocking(0)
 
     def __del__(self):
         self.stop=True
         print(self.name+": stop")
         self.s.close()
+
+    def bufferLength(self,buf_len):
+        self.buf_len=buf_len
 
     def isNewStringAvailable(self):
         self.lock.acquire()
@@ -65,14 +70,18 @@ class UdpReceiverThread (Thread):
                 if self.stop:
                     break
                 try:
-                    msg, addr = self.s.recvfrom(1024) # buffer size is 1024 bytes
-                    full_msg += msg.decode("utf-8")
+                    #msg, addr = self.s.recvfrom(1) # buffer size is 1024 bytes
+                    msg = self.s.recv(30) # buffer size is 1024 bytes
+                    char_msg = msg.decode("utf-8")
+                    full_msg += char_msg
+                    if ("\n" in full_msg):
+                        break
                 except:
                     break
             if len(full_msg) > 0:
                 self.new_string=True;
                 self.string=full_msg
-                self.queue.append(full_msg.strip('\n'))
+                self.queue.append(full_msg.split('\n')[0])
                 full_msg=""
 
             if self.stop:
