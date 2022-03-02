@@ -283,6 +283,7 @@ public:
     if (queue_.size()>0)
     {
       str=queue_.front();
+      queue_.pop();
     }
     mtx.unlock();
     return str;

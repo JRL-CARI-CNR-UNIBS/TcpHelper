@@ -22,13 +22,24 @@ target_link_libraries( tcp_server
 )
 
 
-add_executable(cpp_udp_sender cpp_udp_sender.cpp)
-target_link_libraries( cpp_udp_sender
+add_executable(string_udp_sender string_udp_sender.cpp)
+target_link_libraries( string_udp_sender
  ${Boost_LIBRARIES}
 )
 
 
-add_executable(cpp_udp_receiver cpp_udp_receiver.cpp)
-target_link_libraries( cpp_udp_receiver
+add_executable(string_udp_receiver string_udp_receiver.cpp)
+target_link_libraries( string_udp_receiver
+ ${Boost_LIBRARIES}
+)
+
+add_executable(binary_udp_sender binary_udp_sender.cpp)
+target_link_libraries( binary_udp_sender
+ ${Boost_LIBRARIES}
+)
+
+
+add_executable(binary_udp_receiver binary_udp_receiver.cpp)
+target_link_libraries( binary_udp_receiver
  ${Boost_LIBRARIES}
 )

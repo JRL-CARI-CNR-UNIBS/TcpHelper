@@ -13,12 +13,9 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <signal.h>
-#include "tcp_classes.h"
-using boost::asio::ip::tcp;
+#include "udp_string_sockets.h"
 
-enum { max_length = 1024 };
 bool stop=false;
-
 void my_handler(int s)
 {
   printf("Caught signal %d\n",s);
@@ -38,21 +35,18 @@ int main(int argc, char* argv[])
       return 1;
     }
 
-//    std::string host_name=boost::asio::ip::host_name();
-   std::string port =argv[1];
+    std::string port =argv[1];
     std::cout << "port : " <<std::atoi(port.c_str())<<std::endl;
 
-    tcp_helper::UdpReceiver string_receiver(port,stop);
-    std::thread udp_thread(&tcp_helper::UdpReceiver::thread,&string_receiver);
+    udp_string_helper::Receiver string_receiver(port);
 
     while (not stop)
     {
-      if (string_receiver.isUnreadStringAvailable())
-        std::cout << "received = " << string_receiver.getString() << std::endl;
+      if (string_receiver.isUnreadDataAvailable())
+        std::cout << "received = " << string_receiver.getData() << std::endl;
       usleep(200000);
     }
-    if (udp_thread.joinable())
-      udp_thread.join();
+
 
   }
   catch (std::exception& e)

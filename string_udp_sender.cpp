@@ -13,10 +13,8 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <signal.h>
-#include "tcp_classes.h"
-using boost::asio::ip::tcp;
+#include "udp_string_sockets.h"
 
-enum { max_length = 1024 };
 bool stop=false;
 
 void my_handler(int s)
@@ -38,14 +36,12 @@ int main(int argc, char* argv[])
       return 1;
     }
 
-//    std::string host_name=boost::asio::ip::host_name();
     std::string host_name="127.0.0.1";
     std::cout << "host name : " <<host_name<<std::endl;
     std::string port =argv[1];
     std::cout << "port : " <<std::atoi(port.c_str())<<std::endl;
 
-    tcp_helper::UdpSender string_sender(host_name,port,stop);
-    std::thread udp_thread(&tcp_helper::UdpSender::thread,&string_sender);
+    udp_string_helper::Sender string_sender(host_name,port);
 
     int idx=0;
 
@@ -55,8 +51,6 @@ int main(int argc, char* argv[])
       string_sender.sendString(str);
       sleep(2);
     }
-    if (udp_thread.joinable())
-      udp_thread.join();
 
   }
   catch (std::exception& e)
