@@ -89,15 +89,12 @@ class UdpReceiverThread (Thread):
         print("exit ",self.name)
         self.s.close()
 
-class UdpSenderThread (Thread):
+class UdpSenderThread :
     def __init__(self, name,hostname,port):
         Thread.__init__(self)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.port=port
         self.hostname=hostname
-        self.queue = deque()
-        self.stop=False
-        self.lock = Lock()
         self.name = name
 
     def __del__(self):
@@ -105,48 +102,5 @@ class UdpSenderThread (Thread):
         self.stop=True
         self.s.close()
 
-    def hasEmptyQueue(self):
-        self.lock.acquire()
-        flag=len(self.queue)==0
-        self.lock.release()
-        return flag
-
-    def stopThread(self):
-        self.stop=True
-        print("stopping "+self.name)
     def sendString(self,string):
-        self.lock.acquire()
-        self.queue.append(string)
-        self.lock.release()
-
-    def run(self):
-        while True:
-            if self.stop:
-                break;
-            # now our endpoint knows about the OTHER endpoint.
-            try:
-                while True:
-                    if self.stop:
-                        break
-                    self.lock.acquire()
-                    #print("length "+str(len(self.queue)))
-                    if len(self.queue)>0:
-                        string=self.queue.popleft()
-                    else:
-                        self.lock.release()
-                        continue
-                    self.lock.release()
-                    try:
-                        self.s.sendto(bytes(string+"\n","utf-8"),(self.hostname,self.port))
-                    except:
-                        print(self.name +": connection lost, waiting for a new one")
-                        self.lock.acquire()
-                        self.queue.append(string)
-                        self.lock.release()
-                        break
-            except:
-                time.sleep(0.1)
-
-
-        self.s.close()
-        print("exit ",self.name)
+        self.s.sendto(bytes(string+"\n","utf-8"),(self.hostname,self.port))
