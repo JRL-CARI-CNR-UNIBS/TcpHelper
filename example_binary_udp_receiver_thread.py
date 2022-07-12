@@ -29,7 +29,7 @@ if __name__ == '__main__':
         sys.exit()
 
     thread1 = UdpBinaryReceiverThread("Thread#1",hostname,port)
-    thread1.bufferLength(1)
+    thread1.bufferLength(2)
     thread1.start()
     while True:
         if stop:
@@ -37,7 +37,8 @@ if __name__ == '__main__':
             break
         if (thread1.isNewDataAvailable()):
             data=thread1.getData()
-            if ((time.time()-data[0])>0.002):
-                print("new data: ",(time.time()-data[0])*1e3,' ms')
+            print(data)
+            #if ((time.time()-data[0])>0.002):
+            #    print("new data: ",(time.time()-data[0])*1e3,' ms')
         time.sleep(0.001)
     thread1.join()
