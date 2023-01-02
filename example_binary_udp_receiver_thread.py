@@ -17,10 +17,11 @@ def handler(signal_received, frame):
 
 if __name__ == '__main__':
     signal(SIGINT, handler)
-    if len(sys.argv) < 3:
-        print("error: wrong.number of input\nCorrect usage:\npython3 example_udp_server_thread.py [HOSTNAME] [PORT]")
+    if len(sys.argv) < 4:
+        print("error: wrong.number of input\nCorrect usage:\npython3 example_udp_server_thread.py [HOSTNAME] [PORT] [SIZE]")
         sys.exit()
-    nome_script, hostname, port = sys.argv
+    nome_script, hostname, port,size = sys.argv
+
 
     try:
         port=int(port)
@@ -29,7 +30,7 @@ if __name__ == '__main__':
         sys.exit()
 
     thread1 = UdpBinaryReceiverThread("Thread#1",hostname,port)
-    thread1.bufferLength(2)
+    thread1.bufferLength(int(size))
     thread1.start()
     while True:
         if stop:
